@@ -9,6 +9,9 @@
       <UniqueIdentifier>{5DACC7C8-9BD3-4566-9AFE-6C4725ADAEB0}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{4175306a-1bd9-42e5-9e16-98a33f23f385}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\dependencies\zycore\src\Allocator.c">
@@ -23,10 +26,10 @@
     <ClCompile Include="..\..\..\dependencies\zycore\src\String.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\dependencies\zycore\src\Terminal.c">
+    <ClCompile Include="..\..\..\dependencies\zycore\src\Vector.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\dependencies\zycore\src\Vector.c">
+    <ClCompile Include="..\..\..\dependencies\zycore\src\API\Terminal.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,14 +61,19 @@
     <ClInclude Include="..\..\..\dependencies\zycore\include\Zycore\String.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dependencies\zycore\include\Zycore\Terminal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\dependencies\zycore\include\Zycore\Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\dependencies\zycore\include\Zycore\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\dependencies\zycore\include\Zycore\API\Terminal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\dependencies\zycore\resources\VersionInfo.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

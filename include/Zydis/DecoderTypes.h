@@ -129,7 +129,7 @@ typedef struct ZydisDecodedOperand_
     /**
      * @brief   Extended info for register-operands.
      */
-    struct
+    struct ZydisDecodedOperandReg_
     {
         /**
          * @brief   The register value.
@@ -140,7 +140,7 @@ typedef struct ZydisDecodedOperand_
     /**
      * @brief   Extended info for memory-operands.
      */
-    struct
+    struct ZydisDecodedOperandMem_
     {
         /**
          * @brief   The type of the memory operand.
@@ -165,7 +165,7 @@ typedef struct ZydisDecodedOperand_
         /**
          * @brief   Extended info for memory-operands with displacement.
          */
-        struct
+        struct ZydisDecodedOperandMemDisp_
         {
             /**
              * @brief   Signals, if the displacement value is used.
@@ -180,7 +180,7 @@ typedef struct ZydisDecodedOperand_
     /**
      * @brief   Extended info for pointer-operands.
      */
-    struct
+    struct ZydisDecodedOperandPtr_
     {
         ZyanU16 segment;
         ZyanU32 offset;
@@ -188,7 +188,7 @@ typedef struct ZydisDecodedOperand_
     /**
      * @brief   Extended info for immediate-operands.
      */
-    struct
+    struct ZydisDecodedOperandImm_
     {
         /**
          * @brief   Signals, if the immediate value is signed.
@@ -202,7 +202,7 @@ typedef struct ZydisDecodedOperand_
         /**
          * @brief   The immediate value.
          */
-        union
+        union ZydisDecodedOperandImmValue_
         {
             ZyanU64 u;
             ZyanI64 s;
@@ -932,6 +932,10 @@ typedef struct ZydisDecodedInstruction_
     ZyanU8 operand_count;
     /**
      * @brief   Detailed info for all instruction operands.
+     *
+     * Explicit operands are guaranteed to be in the front and ordered as they are printed
+     * by the formatter in Intel mode. No assumptions can be made about the order of hidden
+     * operands, except that they always located behind the explicit operands.
      */
     ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
     /**
@@ -941,7 +945,7 @@ typedef struct ZydisDecodedInstruction_
     /**
      * @brief   Information about accessed CPU flags.
      */
-    struct
+    struct ZydisDecodedInstructionAccessedFlags_
     {
         /**
          * @brief   The CPU-flag action.
@@ -954,7 +958,7 @@ typedef struct ZydisDecodedInstruction_
     /**
      * @brief   Extended info for `AVX` instructions.
      */
-    struct
+    struct ZydisDecodedInstructionAvx_
     {
         /**
          * @brief   The `AVX` vector-length.
@@ -963,7 +967,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Info about the embedded writemask-register (`AVX-512` and `KNC` only).
          */
-        struct
+        struct ZydisDecodedInstructionAvxMask_
         {
             /**
              * @brief   The masking mode.
@@ -977,7 +981,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Contains info about the `AVX` broadcast.
          */
-        struct
+        struct ZydisDecodedInstructionAvxBroadcast_
         {
             /**
              * @brief   Signals, if the broadcast is a static broadcast.
@@ -994,7 +998,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Contains info about the `AVX` rounding.
          */
-        struct
+        struct ZydisDecodedInstructionAvxRounding_
         {
             /**
              * @brief   The `AVX` rounding-mode.
@@ -1004,7 +1008,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Contains info about the `AVX` register-swizzle (`KNC` only).
          */
-        struct
+        struct ZydisDecodedInstructionAvxSwizzle_
         {
             /**
              * @brief   The `AVX` register-swizzle mode.
@@ -1014,7 +1018,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Contains info about the `AVX` data-conversion (`KNC` only).
          */
-        struct
+        struct ZydisDecodedInstructionAvxConversion_
         {
             /**
              * @brief   The `AVX` data-conversion mode.
@@ -1035,7 +1039,7 @@ typedef struct ZydisDecodedInstruction_
     /**
      * @brief   Meta info.
      */
-    struct
+    struct ZydisDecodedInstructionMeta_
     {
         /**
          * @brief   The instruction category.
@@ -1062,7 +1066,7 @@ typedef struct ZydisDecodedInstruction_
      * @brief   Detailed info about different instruction-parts like `ModRM`, `SIB` or
      *          encoding-prefixes.
      */
-    struct
+    struct ZydisDecodedInstructionRaw_
     {
         /**
          * @brief   The number of legacy prefixes.
@@ -1071,7 +1075,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the legacy prefixes (including `REX`).
          */
-        struct
+        struct ZydisDecodedInstructionRawPrefixes_
         {
             /**
              * @brief   The prefix type.
@@ -1085,7 +1089,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `REX` prefix.
          */
-        struct
+        struct ZydisDecodedInstructionRawRex_
         {
             /**
              * @brief   64-bit operand-size promotion.
@@ -1119,7 +1123,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `XOP` prefix.
          */
-        struct
+        struct ZydisDecodedInstructionRawXop_
         {
             /**
              * @brief   Extension of the `ModRM.reg` field (inverted).
@@ -1163,7 +1167,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `VEX` prefix.
          */
-        struct
+        struct ZydisDecodedInstructionRawVex_
         {
             /**
              * @brief   Extension of the `ModRM.reg` field (inverted).
@@ -1211,7 +1215,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `EVEX` prefix.
          */
-        struct
+        struct ZydisDecodedInstructionRawEvex_
         {
             /**
              * @brief   Extension of the `ModRM.reg` field (inverted).
@@ -1279,7 +1283,7 @@ typedef struct ZydisDecodedInstruction_
         /**
         * @brief    Detailed info about the `MVEX` prefix.
         */
-        struct
+        struct ZydisDecodedInstructionRawMvex_
         {
             /**
              * @brief   Extension of the `ModRM.reg` field (inverted).
@@ -1339,7 +1343,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `ModRM` byte.
          */
-        struct
+        struct ZydisDecodedInstructionModRm_
         {
             /**
              * @brief   The addressing mode.
@@ -1362,7 +1366,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about the `SIB` byte.
          */
-        struct
+        struct ZydisDecodedInstructionRawSib_
         {
             /**
              * @brief   The scale factor.
@@ -1385,7 +1389,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about displacement-bytes.
          */
-        struct
+        struct ZydisDecodedInstructionRawDisp_
         {
             /**
              * @brief   The displacement value
@@ -1405,7 +1409,7 @@ typedef struct ZydisDecodedInstruction_
         /**
          * @brief   Detailed info about immediate-bytes.
          */
-        struct
+        struct ZydisDecodedInstructionRawImm_
         {
             /**
              * @brief   Signals, if the immediate value is signed.
@@ -1419,7 +1423,7 @@ typedef struct ZydisDecodedInstruction_
             /**
              * @brief   The immediate value.
              */
-            union
+            union ZydisDecodedInstructionRawImmValue_
             {
                 ZyanU64 u;
                 ZyanI64 s;

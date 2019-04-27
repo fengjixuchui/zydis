@@ -25,7 +25,7 @@
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -80,7 +80,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <TimeStampServer />
-    <OutDir>..\bin\x86\</OutDir>
+    <OutDir>..\bin\DebugX86Kernel\</OutDir>
     <IntDir>obj\$(ProjectName)-$(Platform)-$(Configuration)\</IntDir>
     <EnableInf2cat>false</EnableInf2cat>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -88,7 +88,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <TimeStampServer />
-    <OutDir>..\bin\x86\</OutDir>
+    <OutDir>..\bin\ReleaseX86Kernel\</OutDir>
     <IntDir>obj\$(ProjectName)-$(Platform)-$(Configuration)\</IntDir>
     <EnableInf2cat>false</EnableInf2cat>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -96,7 +96,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <TimeStampServer />
-    <OutDir>..\bin\x64\</OutDir>
+    <OutDir>..\bin\DebugX64Kernel\</OutDir>
     <IntDir>obj\$(ProjectName)-$(Platform)-$(Configuration)\</IntDir>
     <EnableInf2cat>false</EnableInf2cat>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -104,7 +104,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <TimeStampServer />
-    <OutDir>..\bin\x64\</OutDir>
+    <OutDir>..\bin\ReleaseX64Kernel\</OutDir>
     <IntDir>obj\$(ProjectName)-$(Platform)-$(Configuration)\</IntDir>
     <EnableInf2cat>false</EnableInf2cat>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>

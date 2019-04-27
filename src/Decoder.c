@@ -1351,10 +1351,12 @@ static void ZydisSetOperandSizeAndElementInfo(ZydisDecoderContext* context,
     }
 
     // Element count
-    operand->element_count = 1;
     if (operand->element_size && operand->size && (operand->element_type != ZYDIS_ELEMENT_TYPE_CC))
     {
         operand->element_count = operand->size / operand->element_size;
+    } else
+    {
+        operand->element_count = 1;
     }
 }
 #endif
@@ -3329,9 +3331,9 @@ static ZyanStatus ZydisDecodeOptionalInstructionParts(ZydisDecoderContext* conte
             if (has_sib)
             {
                 instruction->raw.sib.offset = instruction->length;
-                ZyanU8 sibByte;
-                ZYAN_CHECK(ZydisInputNext(context, instruction, &sibByte));
-                ZydisDecodeSIB(instruction, sibByte);
+                ZyanU8 sib_byte;
+                ZYAN_CHECK(ZydisInputNext(context, instruction, &sib_byte));
+                ZydisDecodeSIB(instruction, sib_byte);
                 if (instruction->raw.sib.base == 5)
                 {
                     displacement_size = (instruction->raw.modrm.mod == 1) ? 8 : 32;
@@ -4382,7 +4384,7 @@ static ZyanStatus ZydisCheckErrorConditions(ZydisDecoderContext* context,
     }
     case ZYDIS_REG_CONSTRAINTS_CR:
     {
-        // Attempts to reference CR1, CR5, CR6, CR7, and CR9–CR15 result in undefined opcode (#UD)
+        // Attempts to reference CR1, CR5, CR6, CR7, and CR9CR15 result in undefined opcode (#UD)
         // exceptions
         const ZyanU8 value = instruction->raw.modrm.reg | (context->cache.R << 3);
         static const ZyanU8 lookup[16] =
@@ -4397,7 +4399,7 @@ static ZyanStatus ZydisCheckErrorConditions(ZydisDecoderContext* context,
         break;
     }
     case ZYDIS_REG_CONSTRAINTS_DR:
-        // Attempts to reference DR8–DR15 result in undefined opcode (#UD) exceptions. DR4 and DR5
+        // Attempts to reference DR8DR15 result in undefined opcode (#UD) exceptions. DR4 and DR5
         // are only valid, if the debug extension (DE) flag in CR4 is set. As we can't check this,
         // we just allow them.
         if (context->cache.R)
