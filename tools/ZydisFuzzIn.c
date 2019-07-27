@@ -54,6 +54,7 @@ typedef struct ZydisFuzzControlBlock_
     ZydisAddressWidth address_width;
     ZyanBool decoder_mode[ZYDIS_DECODER_MODE_MAX_VALUE + 1];
     ZydisFormatterStyle formatter_style;
+    ZyanU64 rt_address;
     ZyanUPointer formatter_properties[ZYDIS_FORMATTER_PROP_MAX_VALUE + 1];
     char string[16];
 } ZydisFuzzControlBlock;
@@ -65,17 +66,48 @@ typedef struct ZydisFuzzControlBlock_
 // Limit maximum amount of bytes
 #define ZYDIS_FUZZ_MAX_BYTES (1024 * 10 /* 10 KiB */)
 
-#ifdef ZYDIS_FUZZ_AFL_FAST
+#if defined(ZYDIS_FUZZ_AFL_FAST) || defined(ZYDIS_LIBFUZZER)
 #   define ZYDIS_MAYBE_FPUTS(x, y)
 #else
 #   define ZYDIS_MAYBE_FPUTS(x, y) fputs(x, y)
 #endif
 
 /* ============================================================================================== */
+/* Stream reading abstraction                                                                     */
+/* ============================================================================================== */
+
+typedef ZyanUSize (*ZydisStreamRead)(void* ctx, ZyanU8* buf, ZyanUSize max_len);
+
+ZyanUSize ZydisStdinRead(void *ctx, ZyanU8* buf, ZyanUSize max_len)
+{
+    ZYAN_UNUSED(ctx);
+    return fread(buf, 1, max_len, ZYAN_STDIN);
+}
+
+#ifdef ZYDIS_LIBFUZZER
+typedef struct
+{
+    ZyanU8 *buf;
+    ZyanUSize buf_len;
+    ZyanUSize read_offs;
+} ZydisLibFuzzerContext;
+
+ZyanUSize ZydisLibFuzzerRead(void* ctx, ZyanU8* buf, ZyanUSize max_len)
+{
+    ZydisLibFuzzerContext* c = ctx;
+    ZyanUSize len = ZYAN_MIN(c->buf_len - c->read_offs - 1, max_len);
+    if (!len) return 0;
+    ZYAN_MEMCPY(buf, c->buf + c->read_offs, len);
+    c->read_offs += len;
+    return len;
+}
+#endif // ZYDIS_LIBFUZZER
+
+/* ============================================================================================== */
 /* Main iteration                                                                                 */
 /* ============================================================================================== */
 
-static int DoIteration(void)
+static int DoIteration(ZydisStreamRead read_fn, void* stream_ctx)
 {
     ZydisFuzzControlBlock control_block;
 
@@ -85,7 +117,8 @@ static int DoIteration(void)
     _setmode(_fileno(ZYAN_STDIN), _O_BINARY);
 #endif
 
-    if (fread(&control_block, 1, sizeof(control_block), ZYAN_STDIN) != sizeof(control_block))
+    if (read_fn(
+        stream_ctx, (ZyanU8*)&control_block, sizeof(control_block)) != sizeof(control_block))
     {
         ZYDIS_MAYBE_FPUTS("Not enough bytes to fuzz\n", ZYAN_STDERR);
         return EXIT_FAILURE;
@@ -137,53 +170,20 @@ static int DoIteration(void)
         }
     }
 
-    ZyanU8 buffer[1024];
-    ZyanUSize buffer_size;
-    ZyanUSize buffer_remaining = 0;
-    ZyanUSize read_offset_base = 0;
-    do
+    ZyanU8 buffer[32];
+    ZyanUSize buf_len = read_fn(stream_ctx, buffer, sizeof(buffer));
+
+    ZydisDecodedInstruction instruction;
+    char format_buffer[256];
+
+    ZyanStatus status = ZydisDecoderDecodeBuffer(&decoder, buffer, buf_len, &instruction);
+    if (!ZYAN_SUCCESS(status))
     {
-        buffer_size = fread(buffer + buffer_remaining, 1, sizeof(buffer) - buffer_remaining,
-            ZYAN_STDIN);
-        if (buffer_size != (sizeof(buffer) - buffer_remaining))
-        {
-            if (ferror(ZYAN_STDIN))
-            {
-                return EXIT_FAILURE;
-            }
-            ZYAN_ASSERT(feof(ZYAN_STDIN));
-        }
-        buffer_size += buffer_remaining;
+        return EXIT_FAILURE;
+    }
 
-        ZydisDecodedInstruction instruction;
-        ZyanStatus status;
-        ZyanUSize read_offset = 0;
-        char format_buffer[256];
-
-        while ((status = ZydisDecoderDecodeBuffer(&decoder, buffer + read_offset,
-            buffer_size - read_offset, &instruction)) != ZYDIS_STATUS_NO_MORE_DATA)
-        {
-            const ZyanU64 runtime_address = read_offset_base + read_offset;
-
-            if (!ZYAN_SUCCESS(status))
-            {
-                ++read_offset;
-                continue;
-            }
-           
-            ZydisFormatterFormatInstruction(&formatter, &instruction, format_buffer,
-                sizeof(format_buffer), runtime_address);
-            read_offset += instruction.length;
-        }
-
-        buffer_remaining = 0;
-        if (read_offset < sizeof(buffer))
-        {
-            buffer_remaining = sizeof(buffer) - read_offset;
-            ZYAN_MEMMOVE(buffer, buffer + read_offset, buffer_remaining);
-        }
-        read_offset_base += read_offset;
-    } while (buffer_size == sizeof(buffer) && read_offset_base < ZYDIS_FUZZ_MAX_BYTES);
+    ZydisFormatterFormatInstruction(&formatter, &instruction, format_buffer,
+        sizeof(format_buffer), control_block.rt_address);
 
     return EXIT_SUCCESS;
 }
@@ -191,6 +191,35 @@ static int DoIteration(void)
 /* ============================================================================================== */
 /* Entry point                                                                                    */
 /* ============================================================================================== */
+
+#ifdef ZYDIS_LIBFUZZER
+
+int LLVMFuzzerInitialize(int *argc, char ***argv)
+{
+    ZYAN_UNUSED(argc);
+    ZYAN_UNUSED(argv);
+
+    if (ZydisGetVersion() != ZYDIS_VERSION)
+    {
+        fputs("Invalid zydis version\n", ZYAN_STDERR);
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int LLVMFuzzerTestOneInput(ZyanU8 *buf, ZyanUSize len)
+{
+    ZydisLibFuzzerContext ctx;
+    ctx.buf = buf;
+    ctx.buf_len = len;
+    ctx.read_offs = 0;
+
+    DoIteration(&ZydisLibFuzzerRead, &ctx);
+    return 0;
+}
+
+#else // !ZYDIS_LIBFUZZER
 
 int main(void)
 {
@@ -200,16 +229,18 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-#ifdef ZYDIS_FUZZ_AFL_FAST
+#   ifdef ZYDIS_FUZZ_AFL_FAST
     while (__AFL_LOOP(1000))
     {
-        DoIteration();
+        DoIteration(&ZydisStdinRead, ZYAN_NULL);
     }
     return EXIT_SUCCESS;
-#else
-    return DoIteration();
-#endif
+#   else
+    return DoIteration(&ZydisStdinRead, ZYAN_NULL);
+#   endif
 }
+
+#endif // ZYDIS_LIBFUZZER
 
 /* ============================================================================================== */
 
