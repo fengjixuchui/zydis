@@ -4,15 +4,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
-  <a href="https://gitter.im/zyantific/zydis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge">
-    <img src="https://badges.gitter.im/zyantific/zyan-disassembler-engine.svg" alt="Gitter">
-  </a>
-  <a href="https://discord.zyantific.com/">
-    <img src="https://img.shields.io/discord/390136917779415060.svg?logo=discord&label=Discord">
-  </a>
-  <a href="https://dev.azure.com/zyantific/zydis/_build/latest?definitionId=1&branchName=master">
-    <img src="https://dev.azure.com/zyantific/zydis/_apis/build/status/zyantific.zydis?branchName=master">
-  </a>
+  <a href="https://github.com/zyantific/zydis/actions"><img src="https://github.com/zyantific/zydis/workflows/GitHub%20Actions%20CI/badge.svg" alt="GitHub Actions"></a>
+  <a href="https://gitter.im/zyantific/zydis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge"><img src="https://badges.gitter.im/zyantific/zyan-disassembler-engine.svg" alt="Gitter"></a>
+  <a href="https://discord.zyantific.com/"><img src="https://img.shields.io/discord/390136917779415060.svg?logo=discord&label=Discord" alt="Discord"></a>
 </p>
 
 <p align="center">Fast and lightweight x86/x86-64 disassembler library.</p>
@@ -114,11 +108,12 @@ Either use the [Visual Studio 2017 project](./msvc/) or build Zydis using [CMake
 
 ## Bindings
 Official bindings exist for a selection of languages:
-- [Rust](https://github.com/zyantific/zydis-rs)
 - [Pascal](https://github.com/zyantific/zydis-pascal)
+- [Python 3](https://github.com/zyantific/zydis-py)
+- [Rust](https://github.com/zyantific/zydis-rs)
 
 Unofficial but actively maintained bindings:
-- [Python 3](https://github.com/novogen/pydis)
+- [Go](https://github.com/jpap/go-zydis)
 - [LuaJIT](https://github.com/Wiladams/lj2zydis)
 
 ## Versions

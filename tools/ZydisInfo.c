@@ -744,7 +744,7 @@ static void PrintTokenizedInstruction(const ZydisFormatterToken* token)
     while (ZYAN_SUCCESS(status))
     {
         ZydisTokenType type;
-        char* value;
+        ZyanConstCharPointer value;
         if (!ZYAN_SUCCESS(status = ZydisFormatterTokenGetValue(token, &type, &value)))
         {
             ZYAN_FPRINTF(ZYAN_STDERR, "%sFailed to get token value%s\n",
@@ -1153,7 +1153,7 @@ int main(int argc, char** argv)
     ZYAN_PUTS("");
     PrintSegments(&instruction, &data[0]);
 
-    return ZYAN_STATUS_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 /* ============================================================================================== */
