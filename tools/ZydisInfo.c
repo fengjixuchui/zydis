@@ -125,7 +125,7 @@ static const char* FormatZyanStatus(ZyanStatus status)
         "INVALID_MAP",
         "MALFORMED_EVEX",
         "MALFORMED_MVEX",
-        "INVALID_MASK",
+        "INVALID_MASK"
     };
 
     if (ZYAN_STATUS_MODULE(status) == ZYAN_MODULE_ZYCORE)
@@ -570,8 +570,11 @@ static void PrintFlags(const ZydisDecodedInstruction* instruction)
     static const char* strings_flag_name[] =
     {
         "CF",
+        ZYAN_NULL,
         "PF",
+        ZYAN_NULL,
         "AF",
+        ZYAN_NULL,
         "ZF",
         "SF",
         "TF",
@@ -579,7 +582,9 @@ static void PrintFlags(const ZydisDecodedInstruction* instruction)
         "DF",
         "OF",
         "IOPL",
+        ZYAN_NULL,
         "NT",
+        ZYAN_NULL,
         "RF",
         "VM",
         "AC",
@@ -625,14 +630,12 @@ static void PrintFlags(const ZydisDecodedInstruction* instruction)
     }
     ZYAN_PUTS("");
 
-    ZydisCPUFlags flags, temp;
-    ZydisGetAccessedFlagsByAction(instruction, ZYDIS_CPUFLAG_ACTION_UNDEFINED, &temp);
-    ZydisGetAccessedFlagsRead(instruction, &flags);
-    PRINT_VALUE_G("TESTED", "0x%08" PRIX32, flags);
-    ZydisGetAccessedFlagsWritten(instruction, &flags);
-    flags &= ~temp;
-    PRINT_VALUE_G("MODIFIED", "0x%08" PRIX32, flags);
-    PRINT_VALUE_G("UNDEFINED", "0x%08" PRIX32, temp);
+    PRINT_VALUE_G("READ", "0x%08" PRIX32, instruction->cpu_flags_read);
+    PRINT_VALUE_G("WRITTEN", "0x%08" PRIX32, instruction->cpu_flags_written);
+
+    ZydisCPUFlags flags;
+    ZydisGetAccessedFlagsByAction(instruction, ZYDIS_CPUFLAG_ACTION_UNDEFINED, &flags);
+    PRINT_VALUE_G("UNDEFINED", "0x%08" PRIX32, flags);
 }
 
 /**

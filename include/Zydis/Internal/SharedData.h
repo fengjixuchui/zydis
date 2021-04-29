@@ -236,6 +236,7 @@ typedef struct ZydisOperandDefinition_
             ZyanU8 base                    ZYAN_BITFIELD(ZYDIS_IMPLMEM_BASE_REQUIRED_BITS);
         } mem;
     } op;
+    ZyanBool is_multisource4               ZYAN_BITFIELD(1);
 } ZydisOperandDefinition;
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -879,6 +880,10 @@ typedef struct ZydisInstructionDefinitionMVEX_
 typedef struct ZydisAccessedFlags_
 {
     ZydisCPUFlagAction action[ZYDIS_CPUFLAG_MAX_VALUE + 1];
+    ZyanU32 cpu_flags_read      ZYAN_BITFIELD(22);
+    ZyanU32 cpu_flags_written   ZYAN_BITFIELD(22);
+    ZyanU8 fpu_flags_read       ZYAN_BITFIELD( 4);
+    ZyanU8 fpu_flags_written    ZYAN_BITFIELD( 4);
 } ZydisAccessedFlags;
 
 /* ---------------------------------------------------------------------------------------------- */

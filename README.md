@@ -147,7 +147,7 @@ Versions follow the [semantic versioning scheme](https://semver.org/). All stabi
   - v2 is now deprecated, but will receive security fixes until 2021
 
 ## Credits
-- Intel (for open-sourcing [XED](https://github.com/intelxed/xed), allowing for automatic comparision of our tables against theirs, improving both)
+- Intel (for open-sourcing [XED](https://github.com/intelxed/xed), allowing for automatic comparison of our tables against theirs, improving both)
 - [LLVM](https://llvm.org) (for providing pretty solid instruction data as well)
 - Christian Ludloff (http://sandpile.org, insanely helpful)
 - [LekoArts](https://www.lekoarts.de/) (for creating the project logo)
@@ -165,6 +165,9 @@ Under some circumstances (e.g. when building Zydis as a static library using
 CMake and then using Makefiles to manually link it into a shared library), CMake
 might fail to detect that relocation information must be emitted. This can be forced
 by passing `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` to the CMake invocation.
+
+## Consulting and Business Support
+We offer consulting services and professional business support for Zydis. If you need a custom extension, require help in integrating Zydis into your product or simply want contractually guaranteed updates and turnaround times, we are happy to assist with that! Please contact us at business@zyantific.com.
 
 ## Donations
 

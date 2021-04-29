@@ -1168,7 +1168,8 @@ static void ZydisSetOperandSizeAndElementInfo(ZydisDecoderContext* context,
                 operand->element_type = ZYDIS_ELEMENT_TYPE_INT;
             } else
             {
-                ZYAN_ASSERT(definition->size[context->eosz_index]);
+                ZYAN_ASSERT(definition->size[context->eosz_index] || 
+                    (instruction->meta.category == ZYDIS_CATEGORY_AMX_TILE));
                 operand->size = definition->size[context->eosz_index] * 8;
             }
             break;
@@ -1938,6 +1939,11 @@ static ZyanStatus ZydisDecodeOperands(ZydisDecoderContext* context,
                 break;
             default:
                 ZYAN_UNREACHABLE;
+            }
+
+            if (operand->is_multisource4)
+            {
+                instruction->operands[i].attributes |= ZYDIS_OATTRIB_IS_MULTISOURCE4;
             }
 
             goto FinalizeOperand;
@@ -4103,6 +4109,7 @@ static ZyanStatus ZydisNodeHandlerVectorLength(ZydisDecoderContext* context,
     default:
         ZYAN_UNREACHABLE;
     }
+
     *index = context->cache.LL;
     if (*index == 3)
     {
@@ -4803,6 +4810,11 @@ static ZyanStatus ZydisDecodeInstruction(ZydisDecoderContext* context,
                                      sizeof           (flags->action             )));
                         ZYAN_MEMCPY(&instruction->accessed_flags, &flags->action,
                             sizeof(flags->action));
+
+                        instruction->cpu_flags_read = flags->cpu_flags_read;
+                        instruction->cpu_flags_written = flags->cpu_flags_written;
+                        instruction->fpu_flags_read = flags->fpu_flags_read;
+                        instruction->fpu_flags_written = flags->fpu_flags_written;
                     }
                 }
 #endif
@@ -4878,7 +4890,7 @@ ZyanStatus ZydisDecoderInit(ZydisDecoder* decoder, ZydisMachineMode machine_mode
 
 ZyanStatus ZydisDecoderEnableMode(ZydisDecoder* decoder, ZydisDecoderMode mode, ZyanBool enabled)
 {
-    if (!decoder || (mode > ZYDIS_DECODER_MODE_MAX_VALUE))
+    if (!decoder || (mode < 0) || (mode > ZYDIS_DECODER_MODE_MAX_VALUE))
     {
         return ZYAN_STATUS_INVALID_ARGUMENT;
     }
@@ -4913,14 +4925,12 @@ ZyanStatus ZydisDecoderDecodeBuffer(const ZydisDecoder* decoder, const void* buf
     context.decoder = decoder;
     context.buffer = (ZyanU8*)buffer;
     context.buffer_len = length;
-
+    
     ZYAN_MEMSET(instruction, 0, sizeof(*instruction));
     instruction->machine_mode = decoder->machine_mode;
-    static const ZyanU8 lookup[ZYDIS_ADDRESS_WIDTH_MAX_VALUE + 1] =
-    {
-        16, 32, 64
-    };
-    instruction->stack_width = lookup[decoder->address_width];
+
+    // Calculate stack width from address width using a mapping process: [0, 1, 2] -> [16, 32, 64]
+    instruction->stack_width = 16 << decoder->address_width;
 
     ZYAN_CHECK(ZydisCollectOptionalPrefixes(&context, instruction));
     ZYAN_CHECK(ZydisDecodeInstruction(&context, instruction));
